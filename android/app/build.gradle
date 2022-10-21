@@ -221,6 +221,12 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('podcasts_release.keystore')
+            storePassword 'Mystar123!@#'
+            keyAlias 'podcasts_release_alias'
+            keyPassword 'Mystar123!@#'
+        }
     }
     buildTypes {
         debug {
