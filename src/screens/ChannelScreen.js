@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from 'react';
-import {useFocusEffect} from '@react-navigation/native';
 import {
   StyleSheet,
   SafeAreaView,
@@ -12,9 +11,12 @@ import {
 import {Button, Text} from 'react-native-paper';
 import {baseUrl} from '../config/config';
 import {Dimensions} from 'react-native';
+import {useLang} from '../context/Lang';
+import Toast from 'react-native-toast-message';
 
 export const ChannelScreen = props => {
-  const lang = props.route.params.lang;
+  const {langData} = useLang();
+  const lang = langData.lang;
   const windowWidth = Dimensions.get('window').width;
 
   const [podcasts, setPodcasts] = useState([]);
@@ -34,18 +36,24 @@ export const ChannelScreen = props => {
         setPodcasts(tempPodcasts);
         setAudiobooks(tempAudiobooks);
       })
-      .catch(error => console.error(error))
+      .catch(error => {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: error,
+        });
+      })
       .finally(() => setLoading(false));
   }, []);
 
-  const onChannelPress = channelId => {
-    props.navigation.navigate('episode', {channelId});
+  const onChannelPress = channel => {
+    props.navigation.navigate('episode', {channel: JSON.stringify(channel)});
   };
 
   const channelItem = ({item}) => (
     <TouchableOpacity
       style={styles.channelItem}
-      onPress={() => onChannelPress(item.channelname_id)}>
+      onPress={() => onChannelPress(item)}>
       <Image
         source={{
           uri: item.channelimage,

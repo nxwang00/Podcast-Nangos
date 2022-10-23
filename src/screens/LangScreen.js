@@ -10,10 +10,13 @@ import {
 import {Avatar, Text} from 'react-native-paper';
 import {baseUrl} from '../config/config';
 import {assetPath} from '../config/config';
+import {useLang} from '../context/Lang';
+import Toast from 'react-native-toast-message';
 
 const LANG_COLORS = ['#34ad86', '#077988', '#13aaae', '#056a96'];
 
 export const LangScreen = props => {
+  const lang = useLang();
   const [langs, setLangs] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,12 +24,22 @@ export const LangScreen = props => {
     fetch(`${baseUrl}/web/api/language/`)
       .then(response => response.json())
       .then(json => setLangs(json))
-      .catch(error => console.error(error))
+      .catch(error => {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: error,
+        });
+      })
       .finally(() => setLoading(false));
   }, []);
 
-  const onLangBtnClicked = lang => {
-    props.navigation.navigate('channel', {lang});
+  const onLangBtnClicked = language => {
+    const langInfo = {
+      lang: language,
+    };
+    lang.onLang(langInfo);
+    props.navigation.navigate('channel');
   };
 
   return (
