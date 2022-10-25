@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   FlatList,
+  Platform,
 } from 'react-native';
 import {Button, Text} from 'react-native-paper';
 import {baseUrl} from '../config/config';
@@ -24,6 +25,9 @@ export const ChannelScreen = props => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log(Platform.Version);
+    console.log(Platform.constants['Release']);
+
     const tempPodcasts = [];
     const tempAudiobooks = [];
     fetch(`${baseUrl}/web/api/podchannels/${lang}`)
