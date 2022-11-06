@@ -4,7 +4,8 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {LangScreen} from '../screens/LangScreen';
 import {ChannelScreen} from '../screens/ChannelScreen';
 import {EpisodeScreen} from '../screens/EpisodeScreen';
-import {Menu, IconButton} from 'react-native-paper';
+import {SubscriptionScreen} from '../screens/SubscriptionScreen';
+import {Menu, IconButton, Button} from 'react-native-paper';
 import {View, StyleSheet} from 'react-native';
 import {WhatsappMsg} from '../components/WhatsappMsg';
 
@@ -45,9 +46,15 @@ export const NoLangStack = () => {
             title: 'Language',
             headerRight: () => (
               <View style={styles.rightBtnBox}>
+                <Button
+                  textColor="#f7663e"
+                  style={{marginRight: -15}}
+                  onPress={onShowWhatsappDlg}>
+                  Share with a friend
+                </Button>
                 <IconButton
                   icon="whatsapp"
-                  iconColor="white"
+                  iconColor="green"
                   size={20}
                   onPress={onShowWhatsappDlg}
                 />
@@ -66,9 +73,15 @@ export const NoLangStack = () => {
             title: 'Channel',
             headerRight: () => (
               <View style={styles.rightBtnBox}>
+                <Button
+                  textColor="#f7663e"
+                  style={{marginRight: -15}}
+                  onPress={onShowWhatsappDlg}>
+                  Share with a friend
+                </Button>
                 <IconButton
                   icon="whatsapp"
-                  iconColor="white"
+                  iconColor="green"
                   size={20}
                   onPress={onShowWhatsappDlg}
                 />
@@ -100,9 +113,15 @@ export const NoLangStack = () => {
             title: 'Episode',
             headerRight: () => (
               <View style={styles.rightBtnBox}>
+                <Button
+                  textColor="#f7663e"
+                  style={{marginRight: -15}}
+                  onPress={onShowWhatsappDlg}>
+                  Share with a friend
+                </Button>
                 <IconButton
                   icon="whatsapp"
-                  iconColor="white"
+                  iconColor="green"
                   size={20}
                   onPress={onShowWhatsappDlg}
                 />
@@ -127,6 +146,46 @@ export const NoLangStack = () => {
             headerTintColor: '#fff',
           }}
         />
+        <Stack.Screen
+          name="subscription"
+          component={SubscriptionScreen}
+          options={{
+            title: 'Subscription',
+            headerRight: () => (
+              <View style={styles.rightBtnBox}>
+                <Button
+                  textColor="#f7663e"
+                  style={{marginRight: -15}}
+                  onPress={onShowWhatsappDlg}>
+                  Share with a friend
+                </Button>
+                <IconButton
+                  icon="whatsapp"
+                  iconColor="green"
+                  size={20}
+                  onPress={onShowWhatsappDlg}
+                />
+                <Menu
+                  visible={subscriptionMenuVisible}
+                  onDismiss={closeSubscriptionMenu}
+                  anchor={
+                    <IconButton
+                      icon="dots-vertical"
+                      onPress={openSubscriptionMenu}
+                      size={20}
+                      iconColor="white"
+                    />
+                  }>
+                  <Menu.Item onPress={onLangPress} title="Language" />
+                </Menu>
+              </View>
+            ),
+            headerStyle: {
+              backgroundColor: '#1f1f1f',
+            },
+            headerTintColor: '#fff',
+          }}
+        />
       </Stack.Navigator>
       <WhatsappMsg visible={visibleDlg} onHideDlg={onHideWhatsappDlg} />
     </>
@@ -137,5 +196,6 @@ const styles = StyleSheet.create({
   rightBtnBox: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    alignItems: 'center',
   },
 });

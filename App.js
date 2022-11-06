@@ -1,6 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import {Provider as PaperProvider} from 'react-native-paper';
 import {LangProvider} from './src/context/Lang';
+import {UserProvider} from './src/context/User';
 import {Router} from './src/routes/Router';
 import Toast from 'react-native-toast-message';
 import {AppState} from 'react-native';
@@ -16,6 +17,7 @@ const App = () => {
         appState.current = nextAppState;
       },
     );
+
     return () => {
       appStateSubscription.remove();
     };
@@ -23,10 +25,12 @@ const App = () => {
 
   return (
     <LangProvider>
-      <PaperProvider>
-        <Router />
-        <Toast />
-      </PaperProvider>
+      <UserProvider>
+        <PaperProvider>
+          <Router />
+          <Toast />
+        </PaperProvider>
+      </UserProvider>
     </LangProvider>
   );
 };

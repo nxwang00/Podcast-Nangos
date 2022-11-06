@@ -1,4 +1,5 @@
 import React, {useEffect, useState, useCallback} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -8,14 +9,23 @@ import {
   View,
   Dimensions,
 } from 'react-native';
+import {format} from 'date-fns';
 import {List, Searchbar, Text, IconButton} from 'react-native-paper';
 import {baseUrl} from '../config/config';
-import Sound from 'react-native-sound';
-import YoutubePlayer from 'react-native-youtube-iframe';
 import {ChannelDesc} from '../components/ChannelDesc';
 import Toast from 'react-native-toast-message';
+import {useUser} from '../context/User';
+import TrackPlayer, {
+  useTrackPlayerEvents,
+  Event,
+  State,
+} from 'react-native-track-player';
 
-var audioInst = null;
+const trackEvents = [
+  Event.PlaybackState,
+  Event.PlaybackError,
+  Event.PlaybackTrackChanged,
+];
 
 export const EpisodeScreen = props => {
   const channel = props.route.params.channel;
@@ -23,6 +33,10 @@ export const EpisodeScreen = props => {
   const channelId = channelObj.channelname_id;
 
   const windowHeight = Dimensions.get('window').height;
+
+  const {userData} = useUser();
+  const phoneNumber = userData?.phone;
+  // const phoneNumber = '254733706277';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [initEpisodes, setInitEpisodes] = useState([]);
@@ -32,35 +46,177 @@ export const EpisodeScreen = props => {
   const [audioLoading, setAudioLoadiing] = useState(false);
   const [selectedEpisodeId, setSelectedEpisodeId] = useState('');
   const [youtubePlay, setYoutubePlay] = useState(true);
+  const [isSubscribed, setIsSubscribed] = useState(false);
 
-  Sound.setCategory('Playback');
+  const [isLoadedEpisodes, setIsLoadedEpisodes] = useState(false);
+  const [isLoadedSubscribed, setIsLoadedSubscribed] = useState(false);
 
-  useEffect(() => {
-    // fetching the list of episodes
-    fetch(`${baseUrl}/web/api/podepisodes/${channelId}`)
-      .then(response => response.json())
-      .then(json => {
-        const rst = json.map(item => {
-          return {...item, status: 'none'};
-        });
+  const setUpTrackPlayer = async () => {
+    try {
+      await TrackPlayer.setupPlayer();
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
-        setEpisodes(rst);
-        setInitEpisodes(rst);
-      })
-      .catch(error => {
+  useTrackPlayerEvents(trackEvents, event => {
+    if (event.type === Event.PlaybackError) {
+      console.warn('An error occured while playing the current track.');
+    }
+    if (event.type === Event.PlaybackState) {
+      if (event.state === State.Connecting) {
+        resetEpisodesWithStatus(selectedEpisodeId, 'loading');
+      } else if (event.state === State.Playing) {
+        resetEpisodesWithStatus(selectedEpisodeId, 'playing');
+      } else {
+        resetEpisodesWithStatus(selectedEpisodeId, 'none');
+      }
+    }
+    if (event.type === Event.PlaybackTrackChanged) {
+      if (event.nextTrack && event.nextTrack !== 0) {
+        const trackIdx = event.nextTrack % initEpisodes.length;
+        const episode_id = initEpisodes[trackIdx].podcast_id;
+        resetEpisodesWithStatus(episode_id, 'playing');
+        setSelectedEpisodeId(episode_id);
+      }
+    }
+  });
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let isActive = true;
+
+      setUpTrackPlayer();
+
+      try {
+        const getEpisodes = async () => {
+          // fetching the list of episodes
+          const resEpisodes = await fetch(
+            `${baseUrl}/web/api/podepisodes/${channelId}`,
+          );
+          const res_episodes = await resEpisodes.json();
+          const rst = res_episodes.map(item => {
+            return {...item, status: 'none', url: item.episode_url};
+          });
+
+          if (isActive) {
+            setEpisodes(rst);
+            setInitEpisodes(rst);
+            setLoading(false);
+
+            setIsLoadedEpisodes(true);
+          }
+        };
+
+        getEpisodes();
+      } catch (err) {
         Toast.show({
           type: 'error',
           text1: 'Error',
-          text2: error,
+          text2: 'Fetching date is failed.',
         });
-      })
-      .finally(() => setLoading(false));
+      }
 
-    return () => {
-      // release the resource of audio
-      if (audioInst) audioInst.release();
-    };
-  }, []);
+      return async () => {
+        isActive = false;
+        await TrackPlayer.reset();
+      };
+    }, []),
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let isActive = true;
+
+      const getSubscribeInfo = async () => {
+        try {
+          if (phoneNumber) {
+            const resSubscribe = await fetch(
+              `${baseUrl}/web/api/podsubstatus/${phoneNumber}`,
+            );
+
+            const res_subscribe = await resSubscribe.json();
+
+            if (isActive) {
+              if (res_subscribe) {
+                const isExpired = checkExpired(
+                  format(new Date(), 'yyyy-MM-dd'),
+                  res_subscribe[0].subscriptiondate,
+                );
+                if (!isExpired && res_subscribe[0].status === '1') {
+                  setIsSubscribed(true);
+                }
+              }
+            }
+          }
+          setIsLoadedSubscribed(true);
+        } catch (err) {
+          Toast.show({
+            type: 'error',
+            text1: 'Error',
+            text2: 'Fetching date is failed.',
+          });
+        }
+      };
+
+      getSubscribeInfo();
+
+      return () => {
+        isActive = false;
+      };
+    }, [phoneNumber]),
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (isLoadedEpisodes && isLoadedSubscribed) {
+        if (isSubscribed) {
+          addTracks('all');
+        } else {
+          addTracks('first');
+        }
+      }
+    }, [isLoadedEpisodes, isLoadedSubscribed, isSubscribed]),
+  );
+
+  const addTracks = async many => {
+    if (many === 'all') {
+      await TrackPlayer.reset();
+      await TrackPlayer.add(initEpisodes);
+    } else {
+      await TrackPlayer.add(initEpisodes[0]);
+    }
+  };
+
+  const checkExpired = (nowDate, subscriptionDate) => {
+    const nowDates = nowDate.split('-');
+    const nowYear = parseInt(nowDates[0]);
+    const nowMonth = parseInt(nowDates[1]);
+    const nowDay = parseInt(nowDates[2]);
+
+    const subscriptionDates = subscriptionDate.split('-');
+    const subscriptionYear = parseInt(subscriptionDates[0]);
+    const subscriptionMonth = parseInt(subscriptionDates[1]);
+    const subscriptionDay = parseInt(subscriptionDates[2]);
+
+    if (nowYear > subscriptionYear) {
+      return true;
+    } else if (nowYear < subscriptionYear) {
+      return false;
+    } else {
+      if (nowMonth > subscriptionMonth) {
+        return true;
+      } else if (nowMonth < subscriptionMonth) {
+        return false;
+      } else {
+        if (nowDay > subscriptionDay) {
+          return true;
+        } else if (nowDay <= subscriptionDay) {
+          return false;
+        }
+      }
+    }
+  };
 
   const onChangeSearch = query => {
     setSearchQuery(query);
@@ -98,94 +254,39 @@ export const EpisodeScreen = props => {
     }
   };
 
-  const onEpisodeItemPlay = episode => {
+  const onEpisodeItemPlay = async episode => {
     // start audio loading
-    setAudioLoadiing(true);
+    // setAudioLoadiing(true);
 
     const episode_url = episode.episode_url;
     const episode_id = episode.podcast_id;
     const episode_channeltype = episode.channeltype;
 
-    // youtube audio
-    if (episode_channeltype === 'Youtube') {
-      // resuming play
-      if (episode_id === selectedEpisodeId) {
-        setYoutubePlay(true);
-        // playing new
-      } else {
-        // loading
-        resetEpisodesWithStatus(episode_id, 'loading');
-
-        const episode_url_parts = episode_url.split('=');
-        setSelectedEpisodeId(episode_id);
-        setYoutubeId(episode_url_parts[1]);
-      }
-      // general channel audio
+    if (episode_id === selectedEpisodeId) {
+      TrackPlayer.play();
     } else {
-      if (episode_id === selectedEpisodeId) {
-        // resuming play
-        resetEpisodesWithStatus(episode_id, 'playing');
-        setAudioLoadiing(false);
-
-        audioInst.play();
-        // playing new
-      } else {
-        setSelectedEpisodeId(episode_id);
-        resetEpisodesWithStatus(episode_id, 'loading');
-        try {
-          // Removing old audio instance
-          if (audioInst) {
-            audioInst.stop();
-            audioInst.release();
-          }
-
-          const audio = new Sound(episode_url, null, error => {
-            if (error) {
-              Toast.show({
-                type: 'error',
-                text1: 'Loading failed',
-                text2: error,
-              });
-              return;
-            }
-
-            // loaded successfully
-            audioInst = audio;
-            resetEpisodesWithStatus(episode_id, 'playing');
-
-            setAudioLoadiing(false);
-
-            // playing audio
-            audio.play(success => {
-              if (success) {
-                resetEpisodesWithStatus(episode_id, 'none');
-              } else {
-                Toast.show({
-                  type: 'error',
-                  text1: 'Playing failed',
-                  text2: 'playback failed due to audio decoding errors',
-                });
-              }
-            });
-          });
-        } catch (e) {
-          Toast.show({
-            type: 'error',
-            text1: 'Sound file error',
-            text2: e,
-          });
-        }
-      }
+      setSelectedEpisodeId(episode_id);
+      TrackPlayer.pause();
+      const trackIdx = initEpisodes.findIndex(epd => {
+        return epd.podcast_id === episode_id;
+      });
+      await TrackPlayer.skip(trackIdx);
+      TrackPlayer.play();
     }
   };
 
-  const onEpisodeItemPause = episode => {
+  const onEpisodeItemPause = async episode => {
     resetEpisodesWithStatus(episode.podcast_id, 'none');
-    if (episode.channeltype === 'Youtube') {
-      setYoutubePlay(false);
-    } else {
-      audioInst.pause();
-    }
+    // if (episode.channeltype === 'Youtube') {
+    //   setYoutubePlay(false);
+    // } else {
+    //   audioInst.pause();
+    // }
+    TrackPlayer.pause();
+  };
+
+  const onEpisodeItemLock = () => {
+    props.navigation.navigate('subscription');
   };
 
   const loadingStyle = loading ? 'center' : 'flex-start';
@@ -203,19 +304,19 @@ export const EpisodeScreen = props => {
             iconColor="white"
             inputStyle={{color: '#fff'}}
           />
-          <YoutubePlayer
+          {/* <YoutubePlayer
             height={0}
             play={youtubePlay}
             videoId={youtubeId}
             onChangeState={onYTBStateChange}
-          />
+          /> */}
           <ChannelDesc
             imgUri={channelObj.channelimage}
             title={channelObj.channelname}
             desc={channelObj.channel_desc}
           />
           <ScrollView style={{marginVertical: 10, height: windowHeight - 330}}>
-            {episodes.map(episode => (
+            {episodes.map((episode, idx) => (
               <List.Item
                 key={episode.podcast_id}
                 title={episode.epidode_title}
@@ -258,7 +359,7 @@ export const EpisodeScreen = props => {
                       size={16}
                       onPress={() => onEpisodeItemPause(episode)}
                     />
-                  ) : (
+                  ) : idx === 0 || isSubscribed ? (
                     <IconButton
                       {...props}
                       icon="play"
@@ -267,8 +368,18 @@ export const EpisodeScreen = props => {
                       iconColor="black"
                       containerColor="white"
                       size={16}
-                      disabled={audioLoading}
                       onPress={() => onEpisodeItemPlay(episode)}
+                    />
+                  ) : (
+                    <IconButton
+                      {...props}
+                      icon="lock"
+                      type="outlined"
+                      style={{alignSelf: 'center'}}
+                      iconColor="black"
+                      containerColor="#e09e34"
+                      size={16}
+                      onPress={onEpisodeItemLock}
                     />
                   )
                 }

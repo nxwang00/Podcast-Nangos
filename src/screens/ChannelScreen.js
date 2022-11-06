@@ -9,7 +9,7 @@ import {
   FlatList,
   Platform,
 } from 'react-native';
-import {Button, Text} from 'react-native-paper';
+import {Text} from 'react-native-paper';
 import {baseUrl} from '../config/config';
 import {Dimensions} from 'react-native';
 import {useLang} from '../context/Lang';
@@ -25,9 +25,6 @@ export const ChannelScreen = props => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log(Platform.Version);
-    console.log(Platform.constants['Release']);
-
     const tempPodcasts = [];
     const tempAudiobooks = [];
     fetch(`${baseUrl}/web/api/podchannels/${lang}`)
@@ -46,6 +43,7 @@ export const ChannelScreen = props => {
           text1: 'Error',
           text2: error,
         });
+        console.log(error);
       })
       .finally(() => setLoading(false));
   }, []);

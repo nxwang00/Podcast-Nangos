@@ -4,7 +4,8 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {LangScreen} from '../screens/LangScreen';
 import {ChannelScreen} from '../screens/ChannelScreen';
 import {EpisodeScreen} from '../screens/EpisodeScreen';
-import {IconButton} from 'react-native-paper';
+import {SubscriptionScreen} from '../screens/SubscriptionScreen';
+import {IconButton, Button} from 'react-native-paper';
 import {Menu} from 'react-native-paper';
 import {View, StyleSheet} from 'react-native';
 import {WhatsappMsg} from '../components/WhatsappMsg';
@@ -16,6 +17,7 @@ export const LangStack = () => {
 
   const [channelMenuVisible, setChannelMenuVisible] = useState(false);
   const [episodeMenuVisible, setEpisodeMenuVisible] = useState(false);
+  const [subscriptionMenuVisible, setSubscriptionMenuVisible] = useState(false);
   const [visibleDlg, setVisibleDlg] = useState(false);
 
   const openChannelMenu = () => setChannelMenuVisible(true);
@@ -23,6 +25,9 @@ export const LangStack = () => {
 
   const openEpisodeMenu = () => setEpisodeMenuVisible(true);
   const closeEpisodeMenu = () => setEpisodeMenuVisible(false);
+
+  const openSubscriptionMenu = () => setSubscriptionMenuVisible(true);
+  const closeSubscriptionMenu = () => setSubscriptionMenuVisible(false);
 
   const onLangPress = () => {
     navigation.navigate('lang');
@@ -46,9 +51,15 @@ export const LangStack = () => {
             title: 'Language',
             headerRight: () => (
               <View style={styles.rightBtnBox}>
+                <Button
+                  textColor="#f7663e"
+                  style={{marginRight: -15}}
+                  onPress={onShowWhatsappDlg}>
+                  Share with a friend
+                </Button>
                 <IconButton
                   icon="whatsapp"
-                  iconColor="white"
+                  iconColor="green"
                   size={20}
                   onPress={onShowWhatsappDlg}
                 />
@@ -67,9 +78,15 @@ export const LangStack = () => {
             title: 'Channel',
             headerRight: () => (
               <View style={styles.rightBtnBox}>
+                <Button
+                  textColor="#f7663e"
+                  style={{marginRight: -15}}
+                  onPress={onShowWhatsappDlg}>
+                  Share with a friend
+                </Button>
                 <IconButton
                   icon="whatsapp"
-                  iconColor="white"
+                  iconColor="green"
                   size={20}
                   onPress={onShowWhatsappDlg}
                 />
@@ -101,9 +118,15 @@ export const LangStack = () => {
             title: 'Episode',
             headerRight: () => (
               <View style={styles.rightBtnBox}>
+                <Button
+                  textColor="#f7663e"
+                  style={{marginRight: -15}}
+                  onPress={onShowWhatsappDlg}>
+                  Share with a friend
+                </Button>
                 <IconButton
                   icon="whatsapp"
-                  iconColor="white"
+                  iconColor="green"
                   size={20}
                   onPress={onShowWhatsappDlg}
                 />
@@ -128,6 +151,46 @@ export const LangStack = () => {
             headerTintColor: '#fff',
           }}
         />
+        <Stack.Screen
+          name="subscription"
+          component={SubscriptionScreen}
+          options={{
+            title: 'Subscription',
+            headerRight: () => (
+              <View style={styles.rightBtnBox}>
+                <Button
+                  textColor="#f7663e"
+                  style={{marginRight: -15}}
+                  onPress={onShowWhatsappDlg}>
+                  Share with a friend
+                </Button>
+                <IconButton
+                  icon="whatsapp"
+                  iconColor="green"
+                  size={20}
+                  onPress={onShowWhatsappDlg}
+                />
+                <Menu
+                  visible={subscriptionMenuVisible}
+                  onDismiss={closeSubscriptionMenu}
+                  anchor={
+                    <IconButton
+                      icon="dots-vertical"
+                      onPress={openSubscriptionMenu}
+                      size={20}
+                      iconColor="white"
+                    />
+                  }>
+                  <Menu.Item onPress={onLangPress} title="Language" />
+                </Menu>
+              </View>
+            ),
+            headerStyle: {
+              backgroundColor: '#1f1f1f',
+            },
+            headerTintColor: '#fff',
+          }}
+        />
       </Stack.Navigator>
       <WhatsappMsg visible={visibleDlg} onHideDlg={onHideWhatsappDlg} />
     </>
@@ -138,5 +201,6 @@ const styles = StyleSheet.create({
   rightBtnBox: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    alignItems: 'center',
   },
 });
