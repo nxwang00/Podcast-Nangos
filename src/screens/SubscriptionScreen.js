@@ -21,9 +21,12 @@ import {PinDlg} from '../components/PinDlg';
 const base64 = require('base-64');
 
 // MPESA payment key constants
-const SHORTCODE = '174379';
+// const SHORTCODE = '174379';
+const SHORTCODE = '7102972';
+// const PASSKEY =
+//   'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919';
 const PASSKEY =
-  'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919';
+  '0f93091a7598f8fd5746e9278c427bda06a10e476c1d8ed5561b35a08f3369f3';
 
 export const SubscriptionScreen = props => {
   const [features, setFeatures] = useState(null);
@@ -58,7 +61,7 @@ export const SubscriptionScreen = props => {
 
     try {
       const resAuth = await fetch(
-        'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+        'https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
         {
           method: 'GET',
           headers: {
@@ -85,10 +88,10 @@ export const SubscriptionScreen = props => {
         PhoneNumber: phoneNumber,
         CallBackURL: 'https://hisaanalytics.com/nangoz/web/api/pesa.php',
         AccountReference: 'SautiFM',
-        TransactionDesc: 'This is the test payment from sanbox account.',
+        TransactionDesc: `The payment is done from ${phoneNumber}`,
       };
       const resPay = await fetch(
-        'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
+        'https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
         {
           method: 'POST',
           headers: {
@@ -243,6 +246,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 50,
+    marginVertical: 5,
   },
   featureText: {
     color: 'white',

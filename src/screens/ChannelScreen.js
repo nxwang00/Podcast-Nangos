@@ -12,12 +12,13 @@ import {
 import {Text} from 'react-native-paper';
 import {baseUrl} from '../config/config';
 import {Dimensions} from 'react-native';
-import {useLang} from '../context/Lang';
+import {useGlobal} from '../context/Global';
 import Toast from 'react-native-toast-message';
+import TrackPlayer from 'react-native-track-player';
 
 export const ChannelScreen = props => {
-  const {langData} = useLang();
-  const lang = langData.lang;
+  const {globalData} = useGlobal();
+  const lang = globalData.lang;
   const windowWidth = Dimensions.get('window').width;
 
   const [podcasts, setPodcasts] = useState([]);
@@ -25,30 +26,29 @@ export const ChannelScreen = props => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    onLoadChannels(lang);
+  }, [lang]);
+
+  const onLoadChannels = async () => {
     const tempPodcasts = [];
     const tempAudiobooks = [];
-    fetch(`${baseUrl}/web/api/podchannels/${lang}`)
-      .then(response => response.json())
-      .then(json => {
-        for (let c of json) {
-          if (c.channeltype === 'audiobook') tempAudiobooks.push(c);
-          else tempPodcasts.push(c);
-        }
-        setPodcasts(tempPodcasts);
-        setAudiobooks(tempAudiobooks);
-      })
-      .catch(error => {
-        Toast.show({
-          type: 'error',
-          text1: 'Error',
-          text2: error,
-        });
-        console.log(error);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    try {
+      const resChannels = await fetch(`${baseUrl}/web/api/podchannels/${lang}`);
+      const res_channels = await resChannels.json();
+      for (let c of res_channels) {
+        if (c.channeltype === 'audiobook') tempAudiobooks.push(c);
+        else tempPodcasts.push(c);
+      }
+      setPodcasts(tempPodcasts);
+      setAudiobooks(tempAudiobooks);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-  const onChannelPress = channel => {
+  const onChannelPress = async channel => {
+    await TrackPlayer.reset();
     props.navigation.navigate('episode', {channel: JSON.stringify(channel)});
   };
 
@@ -85,6 +85,7 @@ export const ChannelScreen = props => {
               renderItem={channelItem}
               keyExtractor={item => item.channelname_id}
               numColumns={3}
+              style={{height: '43%'}}
             />
           </View>
           <View style={{marginTop: 20}}>
@@ -99,6 +100,7 @@ export const ChannelScreen = props => {
               renderItem={channelItem}
               keyExtractor={item => item.channelname_id}
               numColumns={3}
+              style={{height: '42%'}}
             />
           </View>
         </View>

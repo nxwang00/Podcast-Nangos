@@ -9,7 +9,6 @@ import {
   View,
   Dimensions,
 } from 'react-native';
-import {format} from 'date-fns';
 import {List, Searchbar, Text, IconButton} from 'react-native-paper';
 import {baseUrl} from '../config/config';
 import {ChannelDesc} from '../components/ChannelDesc';
@@ -19,7 +18,10 @@ import TrackPlayer, {
   useTrackPlayerEvents,
   Event,
   State,
+  Capability,
 } from 'react-native-track-player';
+import {AudioPlayer} from '../components/AudioPlayer';
+import {useGlobal} from '../context/Global';
 
 const trackEvents = [
   Event.PlaybackState,
@@ -38,6 +40,8 @@ export const EpisodeScreen = props => {
   const phoneNumber = userData?.phone;
   // const phoneNumber = '254733706277';
 
+  const {globalData} = useGlobal();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [initEpisodes, setInitEpisodes] = useState([]);
   const [episodes, setEpisodes] = useState([]);
@@ -51,9 +55,32 @@ export const EpisodeScreen = props => {
   const [isLoadedEpisodes, setIsLoadedEpisodes] = useState(false);
   const [isLoadedSubscribed, setIsLoadedSubscribed] = useState(false);
 
-  const setUpTrackPlayer = async () => {
+  const [isSendingData, setSendingData] = useState(false);
+
+  const updateTrackPlayer = async () => {
     try {
-      await TrackPlayer.setupPlayer();
+      await TrackPlayer.updateOptions({
+        forwardJumpInterval: 30,
+        jumpInterval: 30,
+        capabilities: [
+          Capability.Play,
+          Capability.Pause,
+          Capability.JumpBackward,
+          Capability.JumpForward,
+        ],
+        compactCapabilities: [
+          Capability.Play,
+          Capability.Pause,
+          Capability.JumpBackward,
+          Capability.JumpForward,
+        ],
+        notificationCapabilities: [
+          Capability.Play,
+          Capability.Pause,
+          Capability.JumpBackward,
+          Capability.JumpForward,
+        ],
+      });
     } catch (e) {
       console.log(e);
     }
@@ -68,12 +95,16 @@ export const EpisodeScreen = props => {
         resetEpisodesWithStatus(selectedEpisodeId, 'loading');
       } else if (event.state === State.Playing) {
         resetEpisodesWithStatus(selectedEpisodeId, 'playing');
+        sendTrackData('start');
       } else {
         resetEpisodesWithStatus(selectedEpisodeId, 'none');
+        if (event.state === State.Paused) sendTrackData('pause');
       }
     }
     if (event.type === Event.PlaybackTrackChanged) {
       if (event.nextTrack && event.nextTrack !== 0) {
+        sendPreviousTrackData(event.track, event.position);
+
         const trackIdx = event.nextTrack % initEpisodes.length;
         const episode_id = initEpisodes[trackIdx].podcast_id;
         resetEpisodesWithStatus(episode_id, 'playing');
@@ -86,7 +117,7 @@ export const EpisodeScreen = props => {
     React.useCallback(() => {
       let isActive = true;
 
-      setUpTrackPlayer();
+      updateTrackPlayer();
 
       try {
         const getEpisodes = async () => {
@@ -119,7 +150,7 @@ export const EpisodeScreen = props => {
 
       return async () => {
         isActive = false;
-        await TrackPlayer.reset();
+        // await TrackPlayer.reset();
       };
     }, []),
   );
@@ -138,6 +169,7 @@ export const EpisodeScreen = props => {
             const res_subscribe = await resSubscribe.json();
 
             if (isActive) {
+              // setIsSubscribed(true);
               if (res_subscribe) {
                 const isExpired = checkExpired(
                   format(new Date(), 'yyyy-MM-dd'),
@@ -254,10 +286,65 @@ export const EpisodeScreen = props => {
     }
   };
 
-  const onEpisodeItemPlay = async episode => {
-    // start audio loading
-    // setAudioLoadiing(true);
+  const sendTrackData = async status => {
+    if (isSendingData) return;
+    const ip = globalData.ip;
+    const appid = globalData.appid;
+    const trackIndex = await TrackPlayer.getCurrentTrack();
+    const trackObject = await TrackPlayer.getTrack(trackIndex);
 
+    if (!trackObject) return;
+    const trackPosition = await TrackPlayer.getPosition();
+    const episodeID = trackObject.podcast_id;
+
+    setSendingData(true);
+    const url = `${baseUrl}/web/api/analytics`;
+    const data = {
+      appid,
+      ip,
+      status,
+      channel: channelId,
+      episode: episodeID,
+      timespent: trackPosition,
+    };
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    setSendingData(false);
+  };
+
+  const sendPreviousTrackData = async (trackIdx, position) => {
+    if (isSendingData) return;
+    const track = initEpisodes[trackIdx];
+    const ip = globalData.ip;
+    const appid = globalData.appid;
+    const episodeID = track.podcast_id;
+
+    const url = `${baseUrl}/web/api/analytics`;
+    const data = {
+      appid,
+      ip,
+      status: 'finish',
+      channel: channelId,
+      episode: episodeID,
+      timespent: position,
+    };
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    sendTrackData('start');
+  };
+
+  const onEpisodeItemPlay = async episode => {
     const episode_url = episode.episode_url;
     const episode_id = episode.podcast_id;
     const episode_channeltype = episode.channeltype;
@@ -291,12 +378,37 @@ export const EpisodeScreen = props => {
 
   const loadingStyle = loading ? 'center' : 'flex-start';
 
+  const selectedTrack = initEpisodes.find(
+    ep => ep.podcast_id === selectedEpisodeId,
+  );
+
+  // play/pause on bottom controller
+  const onPlayPause = val => {
+    if (val === 'playing') {
+      TrackPlayer.play();
+    } else {
+      TrackPlayer.pause();
+    }
+  };
+
+  const playForwardBackward = async val => {
+    if (val === 'next') {
+      let position = await TrackPlayer.getPosition();
+      let newPosition = position + 30;
+      await TrackPlayer.seekTo(newPosition);
+    } else {
+      let position = await TrackPlayer.getPosition();
+      let newPosition = position > 30 ? position - 30 : 0;
+      await TrackPlayer.seekTo(newPosition);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container(loadingStyle)}>
       {loading ? (
         <ActivityIndicator color="#fff" size="large" />
       ) : (
-        <View style={{marginTop: 5}}>
+        <View style={{marginTop: 5, flex: 1, justifyContent: 'flex-end'}}>
           <Searchbar
             onChangeText={onChangeSearch}
             value={searchQuery}
@@ -315,7 +427,12 @@ export const EpisodeScreen = props => {
             title={channelObj.channelname}
             desc={channelObj.channel_desc}
           />
-          <ScrollView style={{marginVertical: 10, height: windowHeight - 330}}>
+          <ScrollView
+            style={{
+              marginTop: 10,
+              height: windowHeight - 350,
+              marginBottom: 20,
+            }}>
             {episodes.map((episode, idx) => (
               <List.Item
                 key={episode.podcast_id}
@@ -386,6 +503,15 @@ export const EpisodeScreen = props => {
               />
             ))}
           </ScrollView>
+          {selectedEpisodeId && (
+            <View style={styles.playerBox}>
+              <AudioPlayer
+                track={selectedTrack}
+                onForwardBackward={val => playForwardBackward(val)}
+                onPlayPause={val => onPlayPause(val)}
+              />
+            </View>
+          )}
         </View>
       )}
     </SafeAreaView>
@@ -405,5 +531,13 @@ const styles = StyleSheet.create({
   },
   text: {
     color: 'white',
+  },
+  playerBox: {
+    position: 'absolute',
+    zIndex: 10,
+    height: '6%',
+    width: '100%',
+    bottom: 0,
+    left: -5,
   },
 });

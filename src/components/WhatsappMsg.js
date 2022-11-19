@@ -2,60 +2,59 @@ import React, {useEffect, useState} from 'react';
 import {StyleSheet, TextInput, Linking} from 'react-native';
 import {Button, Dialog, Portal} from 'react-native-paper';
 import Toast from 'react-native-toast-message';
+import {useGlobal} from '../context/Global';
 
 export const WhatsappMsg = props => {
   const {visible, onHideDlg} = props;
+  const {globalData} = useGlobal();
 
-  const [text, setText] = useState(
-    "I'm loving this channel and episode on Sauti FM. You should listen to it.Download the app here http://sauti.fm/app",
-  );
-  const [phoneNumber, setPhoneNumber] = useState('');
+  let myMsg =
+    "I'm loving this channel and episode on Sauti FM. You should listen to it.Download the app here http://sauti.fm/";
 
-  const hideDialog = () => {
+  if (globalData?.lang === 'swahili')
+    myMsg =
+      'Nimefurahia kusikiza rekodi hii kwenye Sauti FM.Pata App yenyewe hapa http://sauti.fm/';
+  else if (globalData?.lang === 'luo')
+    myMsg =
+      'Nakipenda chaneli hii na kipindi cha Sauti FM. Unapaswa kuisikiliza.Pakua programu hapa http://sauti.fm/';
+  else if (globalData?.lang === 'kikuyu')
+    myMsg =
+      'Nakipenda chaneli hii na kipindi cha Sauti FM. Unapaswa kuisikiliza.Pakua programu hapa http://sauti.fm/';
+
+  const [text, setText] = useState(myMsg);
+
+  const hideOkDialog = () => {
     onHideDlg();
-    let mobile = Platform.OS == 'ios' ? phoneNumber : '+' + phoneNumber;
-    if (mobile) {
-      if (text) {
-        let url = 'whatsapp://send?text=' + text + '&phone=' + mobile;
-        Linking.openURL(url)
-          .then(data => {
-            console.log('WhatsApp Opened');
-          })
-          .catch(() => {
-            Toast.show({
-              type: 'error',
-              text1: 'Error',
-              text2: 'Make sure WhatsApp installed on your device.',
-            });
+    if (text) {
+      let url = 'whatsapp://send?text=' + text;
+      Linking.openURL(url)
+        .then(data => {
+          console.log('WhatsApp Opened');
+        })
+        .catch(() => {
+          Toast.show({
+            type: 'error',
+            text1: 'Error',
+            text2: 'Make sure WhatsApp installed on your device.',
           });
-      } else {
-        Toast.show({
-          type: 'error',
-          text1: 'Error',
-          text2: 'Please insert message to send.',
         });
-      }
     } else {
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Please insert mobile no.',
+        text2: 'Please insert message to send.',
       });
     }
   };
 
   return (
     <Portal>
-      <Dialog visible={visible} onDismiss={hideDialog} style={styles.dlg}>
+      <Dialog
+        visible={visible}
+        onDismiss={() => onHideDlg()}
+        style={styles.dlg}>
         <Dialog.Title style={styles.text}>Share</Dialog.Title>
         <Dialog.Content>
-          <TextInput
-            value={phoneNumber}
-            onChangeText={text => setPhoneNumber(text)}
-            style={styles.phoneNumberInput}
-            textColor="white"
-            selectionColor="white"
-          />
           <TextInput
             value={text}
             onChangeText={text => setText(text)}
@@ -66,7 +65,7 @@ export const WhatsappMsg = props => {
           />
         </Dialog.Content>
         <Dialog.Actions>
-          <Button onPress={hideDialog} textColor="white">
+          <Button onPress={hideOkDialog} textColor="white">
             Done
           </Button>
         </Dialog.Actions>

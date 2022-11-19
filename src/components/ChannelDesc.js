@@ -27,7 +27,7 @@ export const ChannelDesc = props => {
         <Text variant="titleLarge" style={styles.text}>
           {title}
         </Text>
-        <ScrollView style={{height: 120, marginTop: 5}}>
+        <ScrollView style={{maxHeight: 100, marginTop: 5}}>
           <Text variant="bodyLarge" style={styles.text}>
             {desc}
           </Text>

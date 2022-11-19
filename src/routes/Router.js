@@ -1,15 +1,15 @@
 import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
-import {useLang} from '../context/Lang';
+import {useGlobal} from '../context/Global';
 import {LangStack} from './LangStack';
 import {NoLangStack} from './NoLangStack';
 
 export const Router = () => {
-  const {langData} = useLang();
+  const {globalData} = useGlobal();
 
   return (
     <NavigationContainer>
-      {langData && langData.lang ? <LangStack /> : <NoLangStack />}
+      {globalData && globalData.lang ? <LangStack /> : <NoLangStack />}
     </NavigationContainer>
   );
 };

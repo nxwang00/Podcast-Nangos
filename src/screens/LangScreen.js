@@ -9,14 +9,13 @@ import {
 } from 'react-native';
 import {Avatar, Text} from 'react-native-paper';
 import {baseUrl} from '../config/config';
-import {assetPath} from '../config/config';
-import {useLang} from '../context/Lang';
+import {useGlobal} from '../context/Global';
 import Toast from 'react-native-toast-message';
 
 const LANG_COLORS = ['#34ad86', '#077988', '#13aaae', '#056a96'];
 
 export const LangScreen = props => {
-  const lang = useLang();
+  const global = useGlobal();
   const [langs, setLangs] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +37,7 @@ export const LangScreen = props => {
     const langInfo = {
       lang: language,
     };
-    lang.onLang(langInfo);
+    global.onLang(langInfo);
     props.navigation.navigate('channel');
   };
 

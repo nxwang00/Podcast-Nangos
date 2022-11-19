@@ -1,37 +1,35 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Provider as PaperProvider} from 'react-native-paper';
-import {LangProvider} from './src/context/Lang';
+import {GlobalProvider} from './src/context/Global';
 import {UserProvider} from './src/context/User';
 import {Router} from './src/routes/Router';
 import Toast from 'react-native-toast-message';
-import {AppState} from 'react-native';
+import {AppVersionDlg} from './src/components/AppVersionDlg';
+import TrackPlayer from 'react-native-track-player';
 
 const App = () => {
-  const appState = useRef(AppState.currentState);
-  useEffect(() => {
-    const appStateSubscription = AppState.addEventListener(
-      'change',
-      nextAppState => {
-        console.log('appState.current: ', appState.current);
-        console.log('nextAppState: ', nextAppState);
-        appState.current = nextAppState;
-      },
-    );
+  const setUpTrackPlayer = async () => {
+    try {
+      await TrackPlayer.setupPlayer();
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
-    return () => {
-      appStateSubscription.remove();
-    };
+  useEffect(() => {
+    setUpTrackPlayer();
   }, []);
 
   return (
-    <LangProvider>
+    <GlobalProvider>
       <UserProvider>
         <PaperProvider>
           <Router />
           <Toast />
+          <AppVersionDlg />
         </PaperProvider>
       </UserProvider>
-    </LangProvider>
+    </GlobalProvider>
   );
 };
 
