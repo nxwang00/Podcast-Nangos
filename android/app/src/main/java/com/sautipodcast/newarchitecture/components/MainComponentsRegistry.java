@@ -1,4 +1,4 @@
-package com.podcast.newarchitecture.components;
+package com.sautipodcast.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;

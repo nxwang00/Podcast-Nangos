@@ -1,4 +1,4 @@
-package com.podcast.newarchitecture.modules;
+package com.sautipodcast.newarchitecture.modules;
 
 import com.facebook.jni.HybridData;
 import com.facebook.react.ReactPackage;

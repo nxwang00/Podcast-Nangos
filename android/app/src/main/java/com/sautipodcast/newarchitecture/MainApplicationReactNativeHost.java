@@ -1,4 +1,4 @@
-package com.podcast.newarchitecture;
+package com.sautipodcast.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -19,9 +19,9 @@ import com.facebook.react.fabric.CoreComponentsRegistry;
 import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.fabric.ReactNativeConfig;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.podcast.BuildConfig;
-import com.podcast.newarchitecture.components.MainComponentsRegistry;
-import com.podcast.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import com.sautipodcast.BuildConfig;
+import com.sautipodcast.newarchitecture.components.MainComponentsRegistry;
+import com.sautipodcast.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 import java.util.ArrayList;
 import java.util.List;
 

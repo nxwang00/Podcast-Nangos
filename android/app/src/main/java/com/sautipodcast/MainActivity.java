@@ -1,4 +1,4 @@
-package com.podcast;
+package com.sautipodcast;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
