@@ -222,10 +222,12 @@ android {
             keyPassword 'android'
         }
         release {
-            storeFile file('podcasts_release.keystore')
-            storePassword 'Mystar123!@#'
-            keyAlias 'podcasts_release_alias'
-            keyPassword 'Mystar123!@#'
+            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
+                storeFile file(MYAPP_UPLOAD_STORE_FILE)
+                storePassword MYAPP_UPLOAD_STORE_PASSWORD
+                keyAlias MYAPP_UPLOAD_KEY_ALIAS
+                keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+            }
         }
     }
     buildTypes {

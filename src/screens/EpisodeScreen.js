@@ -141,11 +141,7 @@ export const EpisodeScreen = props => {
 
         getEpisodes();
       } catch (err) {
-        Toast.show({
-          type: 'error',
-          text1: 'Error',
-          text2: 'Fetching date is failed.',
-        });
+        console.log('Fetching data is failed.');
       }
 
       return async () => {
@@ -183,11 +179,7 @@ export const EpisodeScreen = props => {
           }
           setIsLoadedSubscribed(true);
         } catch (err) {
-          Toast.show({
-            type: 'error',
-            text1: 'Error',
-            text2: 'Fetching date is failed.',
-          });
+          console.log('Fetching data is failed.');
         }
       };
 
