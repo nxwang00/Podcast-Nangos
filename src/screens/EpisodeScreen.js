@@ -22,6 +22,7 @@ import TrackPlayer, {
 } from 'react-native-track-player';
 import {AudioPlayer} from '../components/AudioPlayer';
 import {useGlobal} from '../context/Global';
+import {format} from 'date-fns';
 
 const trackEvents = [
   Event.PlaybackState,
@@ -141,7 +142,11 @@ export const EpisodeScreen = props => {
 
         getEpisodes();
       } catch (err) {
-        console.log('Fetching data is failed.');
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Fetching data for list of episodes is failed.',
+        });
       }
 
       return async () => {
@@ -179,7 +184,11 @@ export const EpisodeScreen = props => {
           }
           setIsLoadedSubscribed(true);
         } catch (err) {
-          console.log('Fetching data is failed.');
+          Toast.show({
+            type: 'error',
+            text1: 'Error',
+            text2: 'Getting subscription infomation is failed.',
+          });
         }
       };
 

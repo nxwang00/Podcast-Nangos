@@ -22,7 +22,8 @@ const base64 = require('base-64');
 
 // MPESA payment key constants
 // const SHORTCODE = '174379';
-const SHORTCODE = '7102972';
+const SHORTCODE1 = '7102972';
+const SHORTCODE = '9084239';
 // const PASSKEY =
 //   'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919';
 const PASSKEY =
@@ -50,7 +51,7 @@ export const SubscriptionScreen = props => {
   }, []);
 
   const getMpesaPassword = cDate => {
-    const password = base64.encode(SHORTCODE + PASSKEY + cDate);
+    const password = base64.encode(SHORTCODE1 + PASSKEY + cDate);
     return password;
   };
 
@@ -77,12 +78,11 @@ export const SubscriptionScreen = props => {
       const currentDate = format(new Date(), 'yyyyMMddHHmmss');
       const mpesaPassword = getMpesaPassword(currentDate);
       const bodyJson = {
-        BusinessShortCode: SHORTCODE,
+        BusinessShortCode: SHORTCODE1,
         Password: mpesaPassword,
         Timestamp: currentDate,
-        TransactionType: 'CustomerPayBillOnline',
+        TransactionType: 'CustomerBuyGoodsOnline',
         Amount: features.Price.split(' ')[0],
-        // PartyA: '254725848171',
         PartyA: phoneNumber,
         PartyB: SHORTCODE,
         PhoneNumber: phoneNumber,
