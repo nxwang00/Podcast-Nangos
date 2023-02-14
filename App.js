@@ -4,7 +4,6 @@ import {GlobalProvider} from './src/context/Global';
 import {UserProvider} from './src/context/User';
 import {Router} from './src/routes/Router';
 import Toast from 'react-native-toast-message';
-import {AppVersionDlg} from './src/components/AppVersionDlg';
 import TrackPlayer from 'react-native-track-player';
 
 const App = () => {
@@ -26,7 +25,6 @@ const App = () => {
         <PaperProvider>
           <Router />
           <Toast />
-          <AppVersionDlg />
         </PaperProvider>
       </UserProvider>
     </GlobalProvider>

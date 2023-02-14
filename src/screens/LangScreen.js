@@ -11,6 +11,7 @@ import {Avatar, Text} from 'react-native-paper';
 import {baseUrl} from '../config/config';
 import {useGlobal} from '../context/Global';
 import Toast from 'react-native-toast-message';
+import {AppVersionDlg} from '../components/AppVersionDlg';
 
 const LANG_COLORS = ['#34ad86', '#077988', '#13aaae', '#056a96'];
 
@@ -66,6 +67,7 @@ export const LangScreen = props => {
           ))}
         </View>
       )}
+      <AppVersionDlg />
     </SafeAreaView>
   );
 };

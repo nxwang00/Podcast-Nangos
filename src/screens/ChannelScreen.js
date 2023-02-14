@@ -15,10 +15,11 @@ import {Dimensions} from 'react-native';
 import {useGlobal} from '../context/Global';
 import Toast from 'react-native-toast-message';
 import TrackPlayer from 'react-native-track-player';
+import {AppVersionDlg} from '../components/AppVersionDlg';
 
 export const ChannelScreen = props => {
   const {globalData} = useGlobal();
-  const lang = globalData.lang;
+  const lang = globalData?.lang;
   const windowWidth = Dimensions.get('window').width;
 
   const [podcasts, setPodcasts] = useState([]);
@@ -26,7 +27,8 @@ export const ChannelScreen = props => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    onLoadChannels(lang);
+    if (lang) onLoadChannels(lang);
+    else props.navigation.navigate('lang');
   }, [lang]);
 
   const onLoadChannels = async () => {
@@ -105,6 +107,7 @@ export const ChannelScreen = props => {
           </View>
         </View>
       )}
+      <AppVersionDlg />
     </SafeAreaView>
   );
 };

@@ -5,11 +5,12 @@ import {LangStack} from './LangStack';
 import {NoLangStack} from './NoLangStack';
 
 export const Router = () => {
-  const {globalData} = useGlobal();
+  // const {globalData} = useGlobal();
 
   return (
     <NavigationContainer>
-      {globalData && globalData.lang ? <LangStack /> : <NoLangStack />}
+      {/* {globalData && globalData.lang ? <LangStack /> : <NoLangStack />} */}
+      <NoLangStack />
     </NavigationContainer>
   );
 };
