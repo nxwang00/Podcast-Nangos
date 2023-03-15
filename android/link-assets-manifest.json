@@ -1,0 +1,25 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/SansSerifBldFLF.ttf",
+      "sha1": "cebc55cfe8ee8f38d106a3b3376d0c28c9126230"
+    },
+    {
+      "path": "src/assets/fonts/SansSerifBookFLF.ttf",
+      "sha1": "d8aa36064944ea5e9e7c9b88f0a6931eeb2fe8c4"
+    },
+    {
+      "path": "src/assets/fonts/SansSerifExbFLF.ttf",
+      "sha1": "44950e5da231eb02653f8341c1f3b17f03071c31"
+    },
+    {
+      "path": "src/assets/fonts/SansSerifFLF-Demibold.ttf",
+      "sha1": "bf4e123d05166423712f55d6cb48264baac52897"
+    },
+    {
+      "path": "src/assets/fonts/SansSerifFLF.ttf",
+      "sha1": "5a7fd04cba03c2170dccac463f0af28b617a5ecb"
+    }
+  ]
+}
