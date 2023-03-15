@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "807480288851",
+    "project_id": "my-first-pro-c6087",
+    "storage_bucket": "my-first-pro-c6087.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:807480288851:android:1aab2c2905bf642a4348a6",
+        "android_client_info": {
+          "package_name": "com.sautipodcast"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "807480288851-ggln7f6ta63rr648bae8ei6h0tqqckc7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0gahkMlSLMya2O0iukOgXV3-OUfWG3bU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "807480288851-ggln7f6ta63rr648bae8ei6h0tqqckc7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
