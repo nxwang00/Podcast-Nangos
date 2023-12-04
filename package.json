@@ -19,7 +19,7 @@
     "date-fns": "^2.29.3",
     "react": "18.1.0",
     "react-native": "0.70.3",
-    "react-native-blob-util": "^0.17.0",
+    "react-native-blob-util": "^0.19.5",
     "react-native-device-info": "^10.3.0",
     "react-native-fs": "^2.20.0",
     "react-native-pager-view": "^6.1.2",
